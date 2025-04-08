@@ -1502,12 +1502,13 @@
     });
 
     // Form submission to Google Sheets
-    // Form submission to Google Sheets with email notifications
+ // Form submission to Google Sheets with email notifications
 const bookingForm = document.getElementById('bookingForm');
 const successMessage = document.getElementById('successMessage');
 
 // Replace with your deployed Google Apps Script Web App URL
-// Make sure to use the correct deployment URL from your Apps Script project
+// IMPORTANT: Make sure to use the correct deployment URL from your Apps Script project
+// You need to deploy as "Execute as: Me" and "Who has access: Anyone (even anonymous)"
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxQ4xdo46tuuNynznlox81yMRbM0UF9MKUWv1rwdj7GR6pwXWQHAGbvyXPlowRsLu5fig/exec';
 
 bookingForm.addEventListener('submit', function(e) {
@@ -1523,19 +1524,19 @@ bookingForm.addEventListener('submit', function(e) {
   const formData = new FormData(this);
   const formDataObject = {};
   
-  // Process form data with proper handling for multiple selections
-  formData.forEach((value, key) => {
-    // Special handling for additionalServices checkboxes
-    if (key === 'additionalServices') {
-      if (!formDataObject[key]) {
-        formDataObject[key] = [];
-      }
-      formDataObject[key].push(value);
-    } else {
-      // For other fields, just store the value
+  // Process checkboxes correctly
+  const checkboxes = formData.getAll('additionalServices');
+  if (checkboxes.length > 0) {
+    formDataObject['additionalServices'] = checkboxes;
+  }
+  
+  // Process all other form fields
+  for (const [key, value] of formData.entries()) {
+    // Skip additionalServices as we've handled it separately
+    if (key !== 'additionalServices') {
       formDataObject[key] = value;
     }
-  });
+  }
   
   // Log the data we're about to send (for debugging)
   console.log('Sending data:', formDataObject);
@@ -1546,8 +1547,7 @@ bookingForm.addEventListener('submit', function(e) {
     body: JSON.stringify(formDataObject),
     headers: {
       'Content-Type': 'application/json'
-    },
-    mode: 'cors' // Explicitly request CORS mode
+    }
   })
   .then(response => {
     console.log('Response status:', response.status);
@@ -1570,14 +1570,16 @@ bookingForm.addEventListener('submit', function(e) {
     // Reset form and selected dates
     bookingForm.reset();
     
-    // Clear selected dates if that element exists
-    const selectedDates = document.getElementById('selectedDates');
-    if (selectedDates) {
-      selectedDates.innerHTML = '';
+    // Clear selected dates
+    const selectedDatesElement = document.getElementById('selectedDates');
+    if (selectedDatesElement) {
+      selectedDatesElement.innerHTML = '';
+      // Also reset the hidden input
+      document.getElementById('allDates').value = '';
     }
     
     // Clear dates array if it exists in the global scope
-    if (typeof dates !== 'undefined') {
+    if (typeof dates !== 'undefined' && Array.isArray(dates)) {
       dates.length = 0;
     }
     
@@ -1600,27 +1602,24 @@ bookingForm.addEventListener('submit', function(e) {
   .catch(error => {
     console.error('Error submitting form:', error);
     
-    // Show detailed error message for debugging
-    const errorDetails = error.message || 'Unknown error';
-    
-    // Show error message
+    // Show error message with debugging info
     successMessage.style.display = 'block';
     successMessage.style.backgroundColor = '#f8d7da';
     successMessage.style.color = '#721c24';
     successMessage.style.borderColor = '#f5c6cb';
-    successMessage.innerHTML = `There was an error submitting your booking request: ${errorDetails}. Please try again or contact us directly.`;
+    successMessage.innerHTML = `There was an error submitting your booking request: ${error.message}. Please try again or contact us directly at ${CONFIG.ADMIN_EMAIL}.`;
     
     // Restore button state
     submitButton.disabled = false;
     submitButton.innerHTML = originalButtonText;
     
-    // Hide error message after 8 seconds
+    // Hide error message after 10 seconds
     setTimeout(() => {
       successMessage.style.display = 'none';
       successMessage.style.backgroundColor = '#d4edda';
       successMessage.style.color = '#155724';
       successMessage.style.borderColor = '#c3e6cb';
-    }, 8000);
+    }, 10000);
   });
 });
   </script>

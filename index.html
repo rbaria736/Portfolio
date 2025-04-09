@@ -129,6 +129,162 @@ a:hover {
   transform: translateY(-3px);
 }
 
+/* Add to your CSS - Custom cursor inspired by Harold Feng */
+.custom-cursor {
+  position: fixed;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: rgba(255, 126, 95, 0.5);
+  border: 1px solid var(--secondary);
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-50%, -50%);
+  transition: width 0.3s, height 0.3s, background-color 0.3s;
+}
+
+.cursor-expanded {
+  width: 50px;
+  height: 50px;
+  background-color: rgba(255, 126, 95, 0.2);
+}
+
+body {
+  cursor: none;
+}
+
+/* Improve hero section to match Harold Feng's style */
+.hero {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-content {
+  max-width: 1000px;
+  padding: 0 15px;
+}
+
+.hero-title {
+  font-size: 5rem;
+  letter-spacing: -1px;
+  line-height: 1.1;
+}
+
+.hero-subtitle {
+  font-size: 1.5rem;
+  font-weight: 300;
+  max-width: 600px;
+  margin: 2rem auto;
+}
+
+/* Enhanced UPQODE-style hover effects */
+.service-card {
+  transition: transform 0.6s cubic-bezier(0.165, 0.84, 0.44, 1), box-shadow 0.6s;
+}
+
+.service-card:hover {
+  transform: translateY(-15px) scale(1.02);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+.gallery-item {
+  transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.gallery-item:hover {
+  transform: scale(0.98);
+}
+
+.gallery-overlay {
+  background: linear-gradient(to top, rgba(44, 62, 80, 0.9) 0%, rgba(44, 62, 80, 0.5) 30%, rgba(0, 0, 0, 0) 60%);
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+/* Page transitions */
+.page-transition {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--primary);
+  z-index: 9998;
+  transform: translateY(100%);
+}
+
+/* Add smooth page reveal animation */
+@keyframes pageReveal {
+  0% { transform: translateY(100%); }
+  100% { transform: translateY(0%); }
+}
+
+@keyframes pageHide {
+  0% { transform: translateY(0%); }
+  100% { transform: translateY(-100%); }
+}
+
+/* Page loader animation */
+.page-loader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  transition: opacity 0.5s ease, visibility 0.5s;
+}
+
+.loader-content {
+  text-align: center;
+}
+
+.loader-logo {
+  animation: rotate 2s linear infinite;
+}
+
+.loader-logo circle {
+  stroke-dasharray: 150;
+  stroke-dashoffset: 150;
+  animation: dash 2s ease-in-out infinite alternate;
+}
+
+.loader-logo path {
+  stroke-dasharray: 90;
+  stroke-dashoffset: 90;
+  animation: dash 2s ease-in-out infinite alternate 0.5s;
+}
+
+.loader-text {
+  font-family: var(--font-alt);
+  font-size: 1.5rem;
+  color: var(--primary);
+  margin-top: 20px;
+  opacity: 0;
+  animation: fadeIn 1s ease forwards 0.5s;
+}
+
+@keyframes rotate {
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes dash {
+  0% { stroke-dashoffset: 150; }
+  100% { stroke-dashoffset: 0; }
+}
+
+@keyframes fadeIn {
+  to { opacity: 1; }
+}
+
 /* Header & Navigation */
 #header {
   position: fixed;
@@ -998,6 +1154,16 @@ footer {
   </style>
 </head>
 <body>
+    <!-- Add this right after your opening <body> tag -->
+<div class="page-loader">
+    <div class="loader-content">
+      <svg class="loader-logo" viewBox="0 0 100 100" width="100" height="100">
+        <circle cx="50" cy="50" r="40" stroke="#ff7e5f" stroke-width="2" fill="none" />
+        <path d="M30,50 L45,65 L70,35" stroke="#ff7e5f" stroke-width="2" fill="none" />
+      </svg>
+      <p class="loader-text">RN Studio</p>
+    </div>
+  </div>
   <!-- Header -->
   <header id="header">
     <div class="container">
@@ -1027,6 +1193,7 @@ footer {
 
   <!-- Hero Section -->
   <section class="hero">
+    <div class="about-img parallax" data-speed="0.1"></div>
     <div class="container">
       <div class="hero-content">
         <h1 class="hero-title">Capturing Memories That Last Forever</h1>
@@ -1038,6 +1205,7 @@ footer {
 
   <!-- About Section -->
   <section id="about" class="section">
+    <div class="about-img parallax" data-speed="0.1"></div>
     <div class="container">
       <h2 class="section-title">About Us</h2>
       <div class="about-content">
@@ -1057,6 +1225,7 @@ footer {
 
   <!-- Services Section -->
   <section id="services" class="section services">
+    <div class="about-img parallax" data-speed="0.1"></div>
     <div class="container">
       <h2 class="section-title">Our Services</h2>
       <div class="services-container">
@@ -1106,6 +1275,7 @@ footer {
 
   <!-- Gallery Section -->
   <section id="gallery" class="section">
+    <div class="about-img parallax" data-speed="0.1"></div>
     <div class="container">
       <h2 class="section-title">Our Gallery</h2>
       <div class="gallery-container">
@@ -1157,6 +1327,7 @@ footer {
 
   <!-- Testimonials Section -->
   <section id="testimonials" class="section testimonials">
+    <div class="about-img parallax" data-speed="0.1"></div>
     <div class="container">
       <h2 class="section-title">Client Testimonials</h2>
       <div class="testimonials-container">
@@ -1186,6 +1357,7 @@ footer {
 
   <!-- Booking Section -->
   <section id="booking" class="section booking">
+    <div class="about-img parallax" data-speed="0.1"></div>
     <div class="container">
       <h2 class="section-title">Book Your Session</h2>
       <div class="booking-form">
@@ -1307,9 +1479,9 @@ footer {
       </div>
     </div>
   </section>
-
   <!-- Footer -->
   <footer>
+    <div class="about-img parallax" data-speed="0.1"></div>
     <div class="container">
       <div class="footer-content">
         <div class="footer-column">
@@ -1380,10 +1552,30 @@ footer {
   <div class="scroll-top" id="scrollTop">
     <i class="fas fa-chevron-up"></i>
   </div>
-
   <!-- Scripts -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
   <script>
+// Add this near the top of your script section
+// Custom cursor follower like Harold Feng's site
+const cursor = document.createElement('div');
+cursor.classList.add('custom-cursor');
+document.body.appendChild(cursor);
+
+document.addEventListener('mousemove', (e) => {
+  cursor.style.left = e.clientX + 'px';
+  cursor.style.top = e.clientY + 'px';
+});
+
+// Add hover effect for interactive elements
+document.querySelectorAll('a, button, .gallery-item, .service-card').forEach(item => {
+  item.addEventListener('mouseenter', () => {
+    cursor.classList.add('cursor-expanded');
+  });
+  item.addEventListener('mouseleave', () => {
+    cursor.classList.remove('cursor-expanded');
+  });
+});
+
     // Initialize AOS
     AOS.init({
       duration: 800,
@@ -1596,7 +1788,25 @@ function removeDate(dateToRemove) {
         document.body.style.overflow = 'auto';
       }
     });
+// Add this near the top of your script section
+// Preload key images
+function preloadImages(urls) {
+  urls.forEach(url => {
+    const img = new Image();
+    img.src = url;
+  });
+}
 
+// Array of key image paths to preload
+const imagesToPreload = [
+  'Photos/hero-bg.jpg',
+  'Photos/wedding-img.jpg',
+  'Photos/pre-wedding-img.JPG',
+  'Photos/event.jpg',
+  'Photos/cinematic.jpg'
+];
+
+preloadImages(imagesToPreload);
     // Form submission to Google Sheets
  // Form submission to Google Sheets with email notifications
 const bookingForm = document.getElementById('bookingForm');
@@ -1736,6 +1946,25 @@ document.getElementById('bookingForm').addEventListener('submit', function(e) {
 window.handleFormResponse = function(data) {
   window.postMessage(JSON.stringify(data), '*');
 };
+// Add this to your script section
+// Page loader
+window.addEventListener('load', function() {
+  const loader = document.querySelector('.page-loader');
+  setTimeout(() => {
+    loader.style.opacity = '0';
+    loader.style.visibility = 'hidden';
+  }, 1000);
+});
+// Add this to your script section
+// Parallax effect
+window.addEventListener('scroll', function() {
+  const parallaxElements = document.querySelectorAll('.parallax');
+  parallaxElements.forEach(element => {
+    const speed = element.dataset.speed || 0.15;
+    const offset = window.pageYOffset * speed;
+    element.style.transform = `translateY(${offset}px)`;
+  });
+});
   </script>
 </body>
 </html>

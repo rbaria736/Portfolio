@@ -1991,11 +1991,12 @@ window.addEventListener('scroll', function() {
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       // Array of image paths - replace with your own images
+     const corsProxy = 'https://corsproxy.io/?';
       const images = [
-    'https://drive.google.com/uc?export=view&id=1PUGQDrv3u1L5qsS-AsE5S_VfrEfh_ivM',
-    'https://drive.google.com/uc?export=view&id=1c61Qi4HHXz5ZJ8AdXqfS3Tgy0abL8wHt',
-    'https://drive.google.com/uc?export=view&id=1iu9x3QZ3OBTyCp9DP4BpVBQAb2owBp4v',
-    'https://drive.google.com/uc?export=view&id=1mOiDk5rypNKL5hgpIBDNNgBSbx5GEmEQ'
+    '${corsProxy}https://drive.google.com/uc?export=view&id=1PUGQDrv3u1L5qsS-AsE5S_VfrEfh_ivM',
+    '${corsProxy}https://drive.google.com/uc?export=view&id=1c61Qi4HHXz5ZJ8AdXqfS3Tgy0abL8wHt',
+    '${corsProxy}https://drive.google.com/uc?export=view&id=1iu9x3QZ3OBTyCp9DP4BpVBQAb2owBp4v',
+    '${corsProxy}https://drive.google.com/uc?export=view&id=1mOiDk5rypNKL5hgpIBDNNgBSbx5GEmEQ'
       ];
       
       const slideshowContainer = document.querySelector('.slideshow-container');

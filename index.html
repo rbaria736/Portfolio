@@ -1436,48 +1436,87 @@
       showSlides(slideIndex);
     }, 5000);
 
-    // Date picker functionality
-    const datePicker = document.getElementById('datePicker');
-    const selectedDates = document.getElementById('selectedDates');
-    const allDatesInput = document.getElementById('allDates');
-    const dates = [];
+// Array to store selected dates
+let dates = [];
 
-    datePicker.addEventListener('change', function() {
-      const selectedDate = this.value;
+// Set minimum date to today
+document.addEventListener('DOMContentLoaded', function() {
+  const datePicker = document.getElementById('datePicker');
+  const today = new Date().toISOString().split('T')[0];
+  datePicker.min = today;
+  
+  // Add event listener for date selection
+  datePicker.addEventListener('change', function() {
+    const selectedDate = this.value;
+    
+    // Check if date is already selected
+    if (!dates.includes(selectedDate) && selectedDate) {
+      // Add to array
+      dates.push(selectedDate);
       
-      if (selectedDate && !dates.includes(selectedDate)) {
-        dates.push(selectedDate);
-        updateSelectedDates();
-        this.value = '';
-      }
+      // Update hidden input with all dates
+      document.getElementById('allDates').value = dates.join(',');
+      
+      // Display selected date
+      updateSelectedDates();
+      
+      // Reset the date picker
+      this.value = '';
+    }
+  });
+});
+
+// Function to update the display of selected dates
+function updateSelectedDates() {
+  const container = document.getElementById('selectedDates');
+  container.innerHTML = '';
+  
+  dates.forEach(function(date) {
+    // Format date for display (convert from YYYY-MM-DD to more readable format)
+    const displayDate = new Date(date);
+    const formattedDate = displayDate.toLocaleDateString('en-US', {
+      weekday: 'short',
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
     });
+    
+    // Create date chip
+    const dateChip = document.createElement('div');
+    dateChip.classList.add('date-chip');
+    
+    // Create text span
+    const dateText = document.createElement('span');
+    dateText.textContent = formattedDate;
+    dateChip.appendChild(dateText);
+    
+    // Create remove button
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.classList.add('remove-date');
+    removeBtn.innerHTML = '&times;';
+    removeBtn.setAttribute('data-date', date);
+    removeBtn.addEventListener('click', function() {
+      const dateToRemove = this.getAttribute('data-date');
+      removeDate(dateToRemove);
+    });
+    
+    dateChip.appendChild(removeBtn);
+    container.appendChild(dateChip);
+  });
+}
 
-    function updateSelectedDates() {
-      selectedDates.innerHTML = '';
-      dates.sort();
-      
-      dates.forEach((date, index) => {
-        const dateTag = document.createElement('div');
-        dateTag.className = 'date-tag';
-        dateTag.innerHTML = `${formatDate(date)} <span class="date-remove" data-index="${index}">&times;</span>`;
-        selectedDates.appendChild(dateTag);
-      });
-      
-      allDatesInput.value = dates.join(',');
-      
-      document.querySelectorAll('.date-remove').forEach(btn => {
-        btn.addEventListener('click', function() {
-          const index = parseInt(this.getAttribute('data-index'));
-          dates.splice(index, 1);
-          updateSelectedDates();
-        });
-      });
-    }
-
-    function formatDate(dateString) {
-      const options = { year: 'numeric', month: 'short', day: 'numeric' };
-      return new Date(dateString).toLocaleDateString(undefined, options);
-    }
+// Function to remove a date
+function removeDate(dateToRemove) {
+  // Filter out the date to remove
+  dates = dates.filter(date => date !== dateToRemove);
+  
+  // Update hidden input
+  document.getElementById('allDates').value = dates.join(',');
+  
+  // Update display
+  updateSelectedDates();
+}
 
     // Gallery modal
     const galleryItems = document.querySelectorAll('.gallery-item');
@@ -1514,9 +1553,10 @@ const successMessage = document.getElementById('successMessage');
 // Replace with your deployed Google Apps Script Web App URL
 // IMPORTANT: Make sure to use the correct deployment URL from your Apps Script project
 // You need to deploy as "Execute as: Me" and "Who has access: Anyone (even anonymous)"
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx7S7jZ_7GFvNraNno-9xg6UWLLHoci2YjeH80RrBq7URPxRT3j7jN-tFNK_2mTg54grQ/exec';
+// Replace with your deployed Google Apps Script Web App URL
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby3_tjJ4DV2si3RVprlyTuLYSkT9wM_qe88tLC6WtDbSp5btLW8Ekx-OtcifraK9UCjcw/exec';
 
-bookingForm.addEventListener('submit', function(e) {
+document.getElementById('bookingForm').addEventListener('submit', function(e) {
   e.preventDefault();
   
   // Change button to loading state
@@ -1525,108 +1565,125 @@ bookingForm.addEventListener('submit', function(e) {
   submitButton.disabled = true;
   submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
   
-  // Collect form data
-  const formData = new FormData(this);
-  const formDataObject = {};
+  // Get the success message element
+  const successMessage = document.getElementById('successMessage');
   
-  // Process checkboxes correctly
+  // Create a FormData object from the form
+  const formData = new FormData(this);
+  
+  // Convert FormData to URL-encoded string for traditional form submission
+  const urlEncodedData = new URLSearchParams(formData).toString();
+  
+  // Use JSONP approach with a hidden iframe for cross-domain submission
+  const iframe = document.createElement('iframe');
+  iframe.style.display = 'none';
+  document.body.appendChild(iframe);
+  
+  // Create a form within the iframe that will submit to the Apps Script
+  const iframeDocument = iframe.contentWindow.document;
+  const iframeForm = iframeDocument.createElement('form');
+  iframeForm.action = SCRIPT_URL;
+  iframeForm.method = 'post';
+  
+  // Add all form fields to the iframe form
+  for (const [key, value] of formData.entries()) {
+    // Skip additionalServices as we'll handle it specially
+    if (key !== 'additionalServices') {
+      const input = iframeDocument.createElement('input');
+      input.type = 'hidden';
+      input.name = key;
+      input.value = value;
+      iframeForm.appendChild(input);
+    }
+  }
+  
+  // Handle checkboxes (additionalServices) specially
   const checkboxes = formData.getAll('additionalServices');
   if (checkboxes.length > 0) {
-    formDataObject['additionalServices'] = checkboxes;
-  }
-  
-  // Process all other form fields
-  for (const [key, value] of formData.entries()) {
-    // Skip additionalServices as we've handled it separately
-    if (key !== 'additionalServices') {
-      formDataObject[key] = value;
-    }
-  }
-  
-  // Log the data we're about to send (for debugging)
-  console.log('Sending data:', formDataObject);
-  
-  // Send data to Google Apps Script
-  fetch(SCRIPT_URL, {
-    method: 'POST',
-    body: JSON.stringify(formDataObject),
-    headers: {
-      'Content-Type': 'application/json'
-    }
-  })
-  .then(response => {
-    console.log('Response status:', response.status);
-    if (!response.ok) {
-      throw new Error('Network response was not ok: ' + response.status);
-    }
-    return response.json();
-  })
-  .then(data => {
-    console.log('Response data:', data);
-    
-    // Update success message with booking ID if provided
-    if (data.bookingId) {
-      successMessage.innerHTML = `Your booking request has been successfully submitted! Your booking reference is <strong>${data.bookingId}</strong>. We'll contact you shortly to confirm your appointment.`;
-    }
-    
-    // Show the success message
-    successMessage.style.display = 'block';
-    
-    // Reset form and selected dates
-    bookingForm.reset();
-    
-    // Clear selected dates
-    const selectedDatesElement = document.getElementById('selectedDates');
-    if (selectedDatesElement) {
-      selectedDatesElement.innerHTML = '';
-      // Also reset the hidden input
-      document.getElementById('allDates').value = '';
-    }
-    
-    // Clear dates array if it exists in the global scope
-    if (typeof dates !== 'undefined' && Array.isArray(dates)) {
-      dates.length = 0;
-    }
-    
-    // Restore button state
-    submitButton.disabled = false;
-    submitButton.innerHTML = originalButtonText;
-    
-    // Hide success message after 8 seconds
-    setTimeout(() => {
-      successMessage.style.display = 'none';
-    }, 8000);
-    
-    // Scroll to top of form
-    const formTop = bookingForm.getBoundingClientRect().top + window.pageYOffset;
-    window.scrollTo({
-      top: formTop - 150,
-      behavior: 'smooth'
+    checkboxes.forEach(value => {
+      const input = iframeDocument.createElement('input');
+      input.type = 'hidden';
+      input.name = 'additionalServices';
+      input.value = value;
+      iframeForm.appendChild(input);
     });
-  })
-  .catch(error => {
-    console.error('Error submitting form:', error);
-    
-    // Show error message with debugging info
-    successMessage.style.display = 'block';
-    successMessage.style.backgroundColor = '#f8d7da';
-    successMessage.style.color = '#721c24';
-    successMessage.style.borderColor = '#f5c6cb';
-    successMessage.innerHTML = `There was an error submitting your booking request: ${error.message}. Please try again or contact us directly at ${CONFIG.ADMIN_EMAIL}.`;
-    
-    // Restore button state
-    submitButton.disabled = false;
-    submitButton.innerHTML = originalButtonText;
-    
-    // Hide error message after 10 seconds
-    setTimeout(() => {
-      successMessage.style.display = 'none';
-      successMessage.style.backgroundColor = '#d4edda';
-      successMessage.style.color = '#155724';
-      successMessage.style.borderColor = '#c3e6cb';
-    }, 10000);
-  });
+  }
+  
+  // Listen for message from the iframe
+  window.addEventListener('message', function(event) {
+    try {
+      const data = JSON.parse(event.data);
+      if (data && data.result === 'success') {
+        // Show success message
+        if (data.bookingId) {
+          successMessage.innerHTML = `Your booking request has been successfully submitted! Your booking reference is <strong>${data.bookingId}</strong>. We'll contact you shortly to confirm your appointment.`;
+        }
+        
+        successMessage.style.display = 'block';
+        
+        // Reset form and selected dates
+        document.getElementById('bookingForm').reset();
+        
+        // Clear selected dates
+        const selectedDatesElement = document.getElementById('selectedDates');
+        if (selectedDatesElement) {
+          selectedDatesElement.innerHTML = '';
+          // Also reset the hidden input
+          document.getElementById('allDates').value = '';
+        }
+        
+        // Scroll to top of form
+        const formTop = document.getElementById('bookingForm').getBoundingClientRect().top + window.pageYOffset;
+        window.scrollTo({
+          top: formTop - 150,
+          behavior: 'smooth'
+        });
+      } else {
+        // Show error message
+        successMessage.style.display = 'block';
+        successMessage.style.backgroundColor = '#f8d7da';
+        successMessage.style.color = '#721c24';
+        successMessage.style.borderColor = '#f5c6cb';
+        successMessage.innerHTML = `There was an error submitting your booking request. Please try again or contact us directly.`;
+      }
+    } catch (error) {
+      console.error('Error processing response:', error);
+    } finally {
+      // Restore button state
+      submitButton.disabled = false;
+      submitButton.innerHTML = originalButtonText;
+      
+      // Remove iframe after processing
+      document.body.removeChild(iframe);
+      
+      // Hide success/error message after some time
+      setTimeout(() => {
+        successMessage.style.display = 'none';
+        successMessage.style.backgroundColor = '#d4edda';
+        successMessage.style.color = '#155724';
+        successMessage.style.borderColor = '#c3e6cb';
+      }, 8000);
+    }
+  }, false);
+  
+  // Add a callback field to the form
+  const callbackInput = iframeDocument.createElement('input');
+  callbackInput.type = 'hidden';
+  callbackInput.name = 'callback';
+  callbackInput.value = 'handleFormResponse';
+  iframeForm.appendChild(callbackInput);
+  
+  // Append the form to the iframe document and submit it
+  iframeDocument.body.appendChild(iframeForm);
+  iframeForm.submit();
+  
+  console.log('Form submitted via iframe');
 });
+
+// Global callback function for JSONP response
+window.handleFormResponse = function(data) {
+  window.postMessage(JSON.stringify(data), '*');
+};
   </script>
 </body>
 </html>
